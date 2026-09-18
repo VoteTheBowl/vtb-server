@@ -1,6 +1,7 @@
-from datetime import datetime
-from typing import Any, List, Literal
 import uuid
+from datetime import datetime
+from typing import Any, Literal
+
 from ninja import ModelSchema, Schema
 
 from vote.models import Ballot
@@ -16,7 +17,7 @@ class EventStatusUpdateBody(Schema):
 
 class EventCreation(Schema):
     name: str
-    choices: List[str]
+    choices: list[str]
     electoral_system: str
     allow_registration: bool = False
     allow_voting: bool = False
