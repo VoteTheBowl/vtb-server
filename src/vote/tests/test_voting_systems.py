@@ -1,9 +1,9 @@
 from django.test import TestCase
 
-from vote.systems.plurality import results
+from vote.voting_systems import plurality
 
 
 class Plurality(TestCase):
     def test_ignore_invalid_answer(self):
-        result = results(["Beef", "Chicken"], ["Chickne", "Sausage", "turkey", "Chicken", "Beef", "Beef", "Chicken", "Chicken"])
+        result = plurality.get_result(["Beef", "Chicken"], ["Chickne", "Sausage", "turkey", "Chicken", "Beef", "Beef", "Chicken", "Chicken"])
         assert result == {"Beef": 2, "Chicken": 3}

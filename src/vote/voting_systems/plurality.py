@@ -1,4 +1,4 @@
-def results(choices: list[str], submissions: list[str]) -> dict[str, int]:
+def get_result(choices: list[str], submissions: list[str | None]) -> dict[str, int]:
     results = {choice: 0 for choice in choices}
 
     for sub in submissions:
