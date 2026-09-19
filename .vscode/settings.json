@@ -5,5 +5,7 @@
             "envManager": "ms-python.python:poetry",
             "packageManager": "ms-python.python:poetry"
         }
-    ]
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic"
 }

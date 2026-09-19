@@ -26,8 +26,6 @@ class EventCreation(Schema):
 class EventDetails(EventCreation):
     id: int
     closed: datetime | None
-    allow_registration: bool
-    allow_voting: bool
     share_token: uuid.UUID
     show_results: bool
 

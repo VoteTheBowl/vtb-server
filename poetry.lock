@@ -50,14 +50,14 @@ bcrypt = ["bcrypt"]
 
 [[package]]
 name = "django-ninja"
-version = "1.4.0"
+version = "1.7.0"
 description = "Django Ninja - Fast Django REST framework"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "django_ninja-1.4.0-py3-none-any.whl", hash = "sha256:b64bb7f269d0c0a890b429802dffbe3689298eb1ed7dc324224f3b325e8f8871"},
-    {file = "django_ninja-1.4.0.tar.gz", hash = "sha256:590bb1c8fc32f07bac1d5b5d404419205c41b4945b86d4237b0676174c1b6df7"},
+    {file = "django_ninja-1.7.0-py3-none-any.whl", hash = "sha256:f1a0f762c9810dabcb040fcff76c6e2f5d0cdb51b4a597799ee06b5df8481f3f"},
+    {file = "django_ninja-1.7.0.tar.gz", hash = "sha256:7a0ce06c978a42a808d9a9d7ba1cda383df8eea90040cfc232ad10b7d9024e0d"},
 ]
 
 [package.dependencies]
@@ -368,4 +368,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "2c34bb906052a820a154717364f341d36b2daadeafcf462d8097872e2bda5c9e"
+content-hash = "b93fbce26da6082b7efff306a4819440d429316289abe0227a16f22b8d869163"
