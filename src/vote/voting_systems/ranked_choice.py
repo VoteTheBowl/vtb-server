@@ -1,9 +1,13 @@
 def get_result(choices: list[str], submissions: list[list[str] | None]):
-    active = [sub.copy() for sub in submissions if sub is not None]
+    """active = [sub.copy() for sub in submissions if sub is not None]
     eliminated: list[str] = []
 
     while len(eliminated) < len(choices) - 2:
-        tallies: dict[str, int] = {choice: 0 for choice in choices if not len(eliminated) or eliminated[-1] != choice}
+        tallies: dict[str, int] = {
+            choice: 0
+            for choice in choices
+            if not len(eliminated) or eliminated[-1] != choice
+        }
         for sub in active:
             if len(eliminated):
                 sub.remove(eliminated[-1])
@@ -11,20 +15,22 @@ def get_result(choices: list[str], submissions: list[list[str] | None]):
 
         winner = None
 
-        #Sort tallies somehow.
-        #Run Majority checks.
-        #if winner break;
-        #remove last tallied choice.
-        #run again
+        # Sort tallies somehow.
+        # Run Majority checks.
+        # if winner break;
+        # remove last tallied choice.
+        # run again
 
-        for choice in tallies:
-            if tallies[choice] >= len(submissions) // 2:
+        halfActive = len(active) // 2
+
+        for choice, tally in tallies.items():
+            if tally >= len(submissions) // 2:
                 winner = choice
-                #find 2nd, 3rd place choices
+                # find 2nd, 3rd place choices
                 break
             else:
-                eliminated.append() #last tally
-
+                eliminated.append()  # last tally
+    """
 
 
 """
