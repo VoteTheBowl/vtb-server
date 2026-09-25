@@ -1,0 +1,2 @@
+class VotingResultException(Exception):
+    pass
