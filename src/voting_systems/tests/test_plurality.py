@@ -1,6 +1,6 @@
-from django.test import TestCase
+from unittest import TestCase
 
-from vote.voting_systems import plurality
+from .. import plurality
 
 
 class Plurality(TestCase):
