@@ -16,6 +16,8 @@ from vote.schemas import (
     EventDetails,
     EventStatusUpdateBody,
 )
+from voting_systems import plurality, star
+from voting_systems.types import AllResultTypes
 
 from .models import Ballot, Event
 
@@ -99,6 +101,34 @@ async def close_event(
     await event.asave()
 
     return EventCloseResponse(closed=event.closed)
+
+
+@router.post(
+    "/event/{event_id}/calculate",
+    response=AllResultTypes,
+    tags=["event"],
+)
+async def calculate_event_result(
+    request, event_id: str, token: uuid.UUID = Header(alias="X-API-Key")
+):
+    event = await aget_object_or_404(Event, pk=event_id)
+
+    if token != event.host_token or (event.closed is None):
+        raise AuthorizationError
+
+    validVotingSystems = {"ST": star.get_result, "PL": plurality.get_result}
+
+    if event.electoral_system not in validVotingSystems:
+        raise NotImplementedError
+
+    result = validVotingSystems[event.electoral_system](
+        event.choices, [x.vote async for x in event.ballot_set.all()]
+    )
+
+    event.result = result
+    await event.asave()
+
+    return result
 
 
 # Ballots
