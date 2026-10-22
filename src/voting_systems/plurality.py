@@ -1,7 +1,9 @@
 from .base import VotingResultException
 
+type PluralityResult = dict[str, int]
 
-def get_result(choices: list[str], submissions: list[str | None]) -> dict[str, int]:
+
+def get_result(choices: list[str], submissions: list[str | None]) -> PluralityResult:
     if len(choices) < 2:
         raise VotingResultException("Must have atleast 2 choices")
 

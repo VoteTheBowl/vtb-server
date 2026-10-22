@@ -8,7 +8,7 @@ class Score(TypedDict):
     score: int
 
 
-class Results(TypedDict):
+class StarResult(TypedDict):
     scores: list[Score]
     gold: list[str]
     silver: list[str]
@@ -98,7 +98,9 @@ def get_winner(
     return gold
 
 
-def get_result(choices: list[str], submissions: list[dict[str, int] | None]) -> Results:
+def get_result(
+    choices: list[str], submissions: list[dict[str, int] | None]
+) -> StarResult:
     if len(choices) < 2:
         raise VotingResultException("Must have atleast 2 choices")
 
@@ -144,4 +146,4 @@ def get_result(choices: list[str], submissions: list[dict[str, int] | None]) -> 
         sanitizedSubmissions,
     )
 
-    return Results(scores=orderedScores, gold=gold, silver=silver, bronze=bronze)
+    return StarResult(scores=orderedScores, gold=gold, silver=silver, bronze=bronze)
