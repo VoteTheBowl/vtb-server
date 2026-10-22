@@ -42,12 +42,13 @@ async def get_event(
 ):
     event = await aget_object_or_404(Event, pk=event_id)
 
-    if (
-        token != event.share_token
-        and token != event.host_token
-        and token not in [x.token async for x in event.ballot_set.all()]
-    ):
+    isVoter = token in [x.token async for x in event.ballot_set.all()]
+
+    if token != event.share_token and token != event.host_token and not isVoter:
         raise AuthorizationError
+
+    if event.show_results == False and isVoter:
+        event.result = None
 
     return event
 
