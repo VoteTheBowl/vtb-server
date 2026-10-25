@@ -116,10 +116,18 @@ async def calculate_event_result(
     if token != event.host_token or (event.closed is None):
         raise AuthorizationError
 
-    validVotingSystems = {"ST": star.get_result, "PL": plurality.get_result}
+    validVotingSystems = {
+        "ST": star.get_result,
+        "PL": plurality.get_result,
+    }
+    # TODO: Move this to a generic location. Somewhere common to the models.
+    # or derived from the model code
 
     if event.electoral_system not in validVotingSystems:
         raise NotImplementedError
+
+    if event.result:
+        raise HttpError(409, "The result has already been calculated.")
 
     result = validVotingSystems[event.electoral_system](
         event.choices, [x.vote async for x in event.ballot_set.all()]
