@@ -16,7 +16,7 @@ from vote.schemas import (
     EventDetails,
     EventStatusUpdateBody,
 )
-from voting_systems import plurality, star
+from voting_systems import plurality, ranked_choice, star
 from voting_systems.types import AllResultTypes
 
 from .models import Ballot, Event
@@ -119,6 +119,7 @@ async def calculate_event_result(
     validVotingSystems = {
         "ST": star.get_result,
         "PL": plurality.get_result,
+        "RC": ranked_choice.get_result,
     }
     # TODO: Move this to a generic location. Somewhere common to the models.
     # or derived from the model code
