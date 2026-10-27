@@ -1,49 +1,61 @@
 from typing import TypedDict
 
+from voting_systems.base import VotingResultException
+
 
 class RankedChoiceResult(TypedDict):
-    rounds: list[dict[str,int]]
+    rounds: list[dict[str, int]]
     roundWinner: str
 
-def get_result(choices: list[str], submissions: list[list[str] | None]) -> RankedChoiceResult:
-    rounds: list[dict[str, int]] = []
 
-    while True:
-        tallies: dict[str, int] = {choice: 0 for choice in choices}
-        tallies["Exhausted"] = 0
+class Round(TypedDict):
+    tally: dict[str, int]
+    exhausted: 0
+
+
+def get_result(
+    choices: list[str], submissions: list[list[str] | None]
+) -> RankedChoiceResult:
+    if len(choices) < 2:
+        raise VotingResultException("Must have atleast 2 choices")
+
+    rounds: list[Round] = []
+    eliminated = set()
+
+    # Run until there is only one choice left.
+    # Return tie if a winner has not been found yet.
+    while len(choices) - len(eliminated) > 1:
+        round = Round(
+            tally={choice: 0 for choice in choices if choice not in eliminated},
+            exhausted=0,
+        )
 
         for submission in submissions:
-            if len(submission):
-                tallies[submission[0]] += 1
+            sub_set = [vote for vote in submission if vote not in eliminated]
+
+            if len(sub_set):
+                round["tally"][sub_set[0]] += 1
             else:
-                tallies['Exhausted'] += 1
+                round["exhausted"] += 1
 
-            rounds.append(tallies)
+        rounds.append(round)
 
-            roundWinner = choices[0]
-            roundLosers = [choices[0]]
+        roundWinner = None
 
-            for choice in choices:
-                if tallies[choice] > tallies[roundWinner]:
-                    roundWinner = choice
+        # Find round winner
+        sortedVotes = sorted(
+            round["tally"].keys(), key=lambda x: round["tally"][x], reverse=True
+        )
 
-                if tallies[choice] < tallies[roundLosers[0]]:
-                    roundLosers = [choice]
+        roundWinner = sortedVotes[0]
 
-                if tallies[choice] == tallies[roundLosers[0]]:
-                    roundLosers.append(choice)
+        # Eliminate round loser
+        losers = {choice for choice in sortedVotes if choice == sortedVotes[-1]}
+        eliminated = eliminated.union(losers)
 
-            #Purge roundLosers from the submissions (and choice list)
-            for submission in submissions:
-                submission = [sub for sub in submissions if sub not in roundLosers] #Might need to be keys
+        # Check if we have an overall winner
+        validVoteCount = len(submissions) - round["exhausted"]
+        if round["tally"][roundWinner] / validVoteCount > 0.5:
+            return RankedChoiceResult(rounds=rounds, roundWinner=roundWinner)
 
-            choices = [choice for choice in choices if choice not in roundLosers]
-
-            #Check for a tie and/or an overall winner
-            if len(choices) == 0:
-                return RankedChoiceResult(rounds=rounds, roundWinner='__TIE_FLAG__')
-
-            validVoteCount = len[submissions] - tallies['Exhausted']
-
-            if tallies[roundWinner] / validVoteCount > 0.5:
-                return RankedChoiceResult(rounds=rounds, roundWinner=roundWinner)
+    return RankedChoiceResult(rounds=rounds, roundWinner="__TIE_FLAG__")
