@@ -15,7 +15,9 @@ class StarResult(TypedDict):
     bronze: list[str]
 
 
-type SanitizedSubmissions = list[dict[str, int]]
+type StarSubmission = dict[str, int] | None
+
+type SanitizedSubmissions = list[StarSubmission]
 
 
 def get_choice_with_most_stars(choice_a: str, choice_b: str, totals: dict[str, int]):
@@ -98,9 +100,7 @@ def get_winner(
     return gold
 
 
-def get_result(
-    choices: list[str], submissions: list[dict[str, int] | None]
-) -> StarResult:
+def get_result(choices: list[str], submissions: list[StarSubmission]) -> StarResult:
     if len(choices) < 2:
         raise VotingResultException("Must have atleast 2 choices")
 

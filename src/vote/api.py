@@ -1,11 +1,14 @@
 import uuid
 from datetime import UTC, datetime
+from typing import Annotated, Any
 
 from django.db import IntegrityError
 from django.shortcuts import aget_object_or_404
 from ninja import Header, Router
 from ninja.errors import AuthorizationError, HttpError, ValidationError
+from pydantic import BeforeValidator, TypeAdapter
 
+import voting_systems
 from vote.schemas import (
     BallotSchema,
     BallotSubmission,
@@ -16,8 +19,6 @@ from vote.schemas import (
     EventDetails,
     EventStatusUpdateBody,
 )
-from voting_systems import plurality, ranked_choice, star
-from voting_systems.types import AllResultTypes
 
 from .models import Ballot, Event
 
@@ -105,7 +106,7 @@ async def close_event(
 
 @router.post(
     "/event/{event_id}/calculate",
-    response=AllResultTypes,
+    response=voting_systems.types.AllResultTypes,
     tags=["event"],
 )
 async def calculate_event_result(
@@ -116,21 +117,13 @@ async def calculate_event_result(
     if token != event.host_token or (event.closed is None):
         raise AuthorizationError
 
-    validVotingSystems = {
-        "ST": star.get_result,
-        "PL": plurality.get_result,
-        "RC": ranked_choice.get_result,
-    }
-    # TODO: Move this to a generic location. Somewhere common to the models.
-    # or derived from the model code
-
-    if event.electoral_system not in validVotingSystems:
+    if event.electoral_system not in voting_systems.config:
         raise NotImplementedError
 
     if event.result:
         raise HttpError(409, "The result has already been calculated.")
 
-    result = validVotingSystems[event.electoral_system](
+    result = voting_systems.config[event.electoral_system]["result"](
         event.choices, [x.vote async for x in event.ballot_set.all()]
     )
 
@@ -182,6 +175,15 @@ async def submit_ballot(
         Ballot.objects.prefetch_related("event"), pk=ballot_id
     )
 
+    try:
+        Adapter = TypeAdapter(
+            voting_systems.config[ballot.event.electoral_system]["submissionType"]
+        )
+    except KeyError:
+        raise NotImplementedError
+
+    vote = Adapter.validate_python(payload.vote)
+
     if ballot.event.allow_voting is False or ballot.event.closed is not None:
         raise HttpError(409, "Event is not accepting ballots.")
 
@@ -191,7 +193,7 @@ async def submit_ballot(
     if ballot.submitted is not None:
         raise HttpError(409, "Ballot already submitted.")
 
-    ballot.vote = payload.vote
+    ballot.vote = vote
     ballot.submitted = datetime.now(tz=UTC)
     await ballot.asave()
 

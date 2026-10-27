@@ -3,18 +3,21 @@ from typing import TypedDict
 from voting_systems.base import VotingResultException
 
 
-class RankedChoiceResult(TypedDict):
-    rounds: list[dict[str, int]]
-    roundWinner: str
-
-
 class Round(TypedDict):
     tally: dict[str, int]
-    exhausted: 0
+    exhausted: int | str
+
+
+type RankedChoiceSubmission = list[str] | None
+
+
+class RankedChoiceResult(TypedDict):
+    rounds: list[Round]
+    winner: str
 
 
 def get_result(
-    choices: list[str], submissions: list[list[str] | None]
+    choices: list[str], submissions: list[RankedChoiceSubmission]
 ) -> RankedChoiceResult:
     if len(choices) < 2:
         raise VotingResultException("Must have atleast 2 choices")
@@ -50,12 +53,16 @@ def get_result(
         roundWinner = sortedVotes[0]
 
         # Eliminate round loser
-        losers = {choice for choice in sortedVotes if choice == sortedVotes[-1]}
+        losers = {
+            choice
+            for choice in round["tally"]
+            if round["tally"][choice] == round["tally"][sortedVotes[-1]]
+        }
         eliminated = eliminated.union(losers)
 
         # Check if we have an overall winner
         validVoteCount = len(submissions) - round["exhausted"]
         if round["tally"][roundWinner] / validVoteCount > 0.5:
-            return RankedChoiceResult(rounds=rounds, roundWinner=roundWinner)
+            return RankedChoiceResult(rounds=rounds, winner=roundWinner)
 
-    return RankedChoiceResult(rounds=rounds, roundWinner="__TIE_FLAG__")
+    return RankedChoiceResult(rounds=rounds, winner="__TIE_FLAG__")
