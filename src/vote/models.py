@@ -15,6 +15,7 @@ class Event(models.Model):
     electoral_system = models.CharField(max_length=2)
     allow_registration = models.BooleanField(default=False)
     allow_voting = models.BooleanField(default=False)
+    result = models.JSONField(null=True, default=None)
 
 
 class Ballot(models.Model):

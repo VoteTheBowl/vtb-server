@@ -1,27 +1,28 @@
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
 from django.test import TestCase
-from ninja.testing import TestClient, TestAsyncClient
-from ..models import Event, Ballot
+from ninja.testing import TestAsyncClient
+
 from ..api import router
+from ..models import Ballot, Event
 
 
 class BallotTestCase(TestCase):
     @classmethod
-    def setUpTestData(self):
-        self.client = TestClient(router)
-        self.aclient = TestAsyncClient(router)
-        self.event = Event.objects.create(
+    def setUpTestData(cls):
+        cls.aclient = TestAsyncClient(router)
+        cls.event = Event.objects.create(
             name="Big Cookoff",
             choices=["Tom's Texas Chili", "Jim's Vegan Chili", "Ed's Fusion Chili"],
             electoral_system="PL",
             allow_registration=True,
         )
-        self.ballot = Ballot.objects.create(event=self.event, voter_name="Becky")
+        cls.ballot = Ballot.objects.create(event=cls.event, voter_name="Becky")
 
     async def test_ballot_creation(self):
         response = await self.aclient.post(
-            f"/event/{self.event.id}/create-ballot",
+            f"/event/{self.event.pk}/create-ballot",
             headers={"X-API-Key": self.event.share_token},
             query_params={
                 "voter_name": "Don",
@@ -32,7 +33,7 @@ class BallotTestCase(TestCase):
 
     async def test_ballot_creation_with_duplicate_name(self):
         response = await self.aclient.post(
-            f"/event/{self.event.id}/create-ballot",
+            f"/event/{self.event.pk}/create-ballot",
             headers={"X-API-Key": self.event.share_token},
             query_params={
                 "voter_name": "Becky",
@@ -42,7 +43,7 @@ class BallotTestCase(TestCase):
 
     async def test_ballot_creation_with_bad_token(self):
         response = await self.aclient.post(
-            f"/event/{self.event.id}/create-ballot",
+            f"/event/{self.event.pk}/create-ballot",
             headers={"X-API-Key": uuid.uuid4()},
             query_params={
                 "voter_name": "Don",
@@ -56,7 +57,7 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         response = await self.aclient.post(
-            f"/event/{self.event.id}/create-ballot",
+            f"/event/{self.event.pk}/create-ballot",
             headers={"X-API-Key": self.event.share_token},
             query_params={
                 "voter_name": "Don",
@@ -69,7 +70,7 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         response = await self.aclient.post(
-            f"/event/{self.event.id}/create-ballot",
+            f"/event/{self.event.pk}/create-ballot",
             headers={"X-API-Key": self.event.share_token},
             query_params={
                 "voter_name": "Don",
@@ -85,7 +86,7 @@ class BallotTestCase(TestCase):
         vote = "Ed's Fusion Chili"
 
         response = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": self.ballot.token},
             json={"vote": vote},
         )
@@ -98,14 +99,14 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         submission = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": self.ballot.token},
             json={"vote": "Ed's Fusion Chili"},
         )
         self.assertEqual(submission.status_code, 200)
 
         resubmission = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": self.ballot.token},
             json={"vote": "Tom's Texas Chili"},
         )
@@ -117,7 +118,7 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         response = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": uuid.uuid4()},
             json={"vote": "Ed's Fusion Chili"},
         )
@@ -129,7 +130,7 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         response = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": self.ballot.token},
             json={"vote": "Ed's Fusion Chili"},
         )
@@ -142,7 +143,7 @@ class BallotTestCase(TestCase):
         await self.event.asave()
 
         response = await self.aclient.post(
-            f"/ballot/{self.ballot.id}/submit",
+            f"/ballot/{self.ballot.pk}/submit",
             headers={"X-API-Key": self.ballot.token},
             json={"vote": "Ed's Fusion Chili"},
         )
@@ -167,7 +168,7 @@ class BallotTestCase(TestCase):
         await ballot3.asave()
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": event.host_token},
         )
 
@@ -175,7 +176,7 @@ class BallotTestCase(TestCase):
         self.assertEqual(len(response.json()), 3)
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": ballot1.token},
         )
 
@@ -206,14 +207,14 @@ class BallotTestCase(TestCase):
         await ballot3.asave()
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": event1.host_token},
         )
 
         self.assertEqual(response.status_code, 403)
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": ballot.token},
         )
 
@@ -234,14 +235,14 @@ class BallotTestCase(TestCase):
         await ballot1.asave()
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": event.host_token},
         )
 
         self.assertEqual(response.status_code, 200)
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": ballot1.token},
         )
 
@@ -253,7 +254,7 @@ class BallotTestCase(TestCase):
         await event.asave()
 
         response = await self.aclient.get(
-            f"/event/{event.id}/ballots",
+            f"/event/{event.pk}/ballots",
             headers={"X-API-Key": ballot1.token},
         )
 
@@ -261,7 +262,7 @@ class BallotTestCase(TestCase):
 
     async def test_get_ballot(self):
         response = await self.aclient.get(
-            f"/ballot/{self.ballot.id}",
+            f"/ballot/{self.ballot.pk}",
             headers={"X-API-Key": self.ballot.token},
         )
         self.assertEqual(response.status_code, 200)
@@ -269,7 +270,7 @@ class BallotTestCase(TestCase):
 
     async def test_get_ballot_with_event_host_token(self):
         response = await self.aclient.get(
-            f"/ballot/{self.ballot.id}",
+            f"/ballot/{self.ballot.pk}",
             headers={"X-API-Key": self.event.host_token},
         )
         self.assertEqual(response.status_code, 200)
@@ -277,7 +278,7 @@ class BallotTestCase(TestCase):
 
     async def test_get_ballot_random_token(self):
         response = await self.aclient.get(
-            f"/ballot/{self.ballot.id}",
+            f"/ballot/{self.ballot.pk}",
             headers={"X-API-Key": uuid.uuid4()},
         )
         self.assertEqual(response.status_code, 403)

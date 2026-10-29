@@ -5,6 +5,7 @@ from typing import Any, Literal
 from ninja import ModelSchema, Schema
 
 from vote.models import Ballot
+from voting_systems.types import AllResultTypes
 
 type EventStatus = Literal["RE", "CL", "VO"]
 
@@ -26,10 +27,9 @@ class EventCreation(Schema):
 class EventDetails(EventCreation):
     id: int
     closed: datetime | None
-    allow_registration: bool
-    allow_voting: bool
     share_token: uuid.UUID
     show_results: bool
+    result: AllResultTypes
 
 
 class EventCloseResponse(Schema):
