@@ -12,9 +12,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+import sentry_sdk
 from environs import env
 
 env.read_env()
+
+SENTRY_DSN = env.str("SENTRY_DSN")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # To customize collected data (user info, request bodies, AI inputs/outputs),
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/
+        # data_collection={"user_info": False},
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        # Set profile_session_sample_rate to 1.0 to profile 100%
+        # of profile sessions.
+        profile_session_sample_rate=1.0,
+        # Set profile_lifecycle to "trace" to automatically
+        # run the profiler on when there is an active transaction
+        profile_lifecycle="trace",
+    )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,7 +109,7 @@ DATABASES = {
         "PORT": env("DJANGO_DB_PORT", 15432),
         "USER": env("DJANGO_DB_USER", "voteoff"),
         "PASSWORD": env("DJANGO_DB_PASSWORD", "voteoff"),
-        "OPTIONS": { "sslmode": env("DJANGO_DB_SSL_MODE", "prefer") },
+        "OPTIONS": {"sslmode": env("DJANGO_DB_SSL_MODE", "prefer")},
     }
 }
 
