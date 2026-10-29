@@ -1,9 +1,11 @@
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
+
 from django.test import TestCase
-from ninja.testing import TestClient, TestAsyncClient
-from ..models import Event, Ballot
+from ninja.testing import TestAsyncClient
+
 from ..api import router
+from ..models import Ballot, Event
 
 
 class BallotTestCase(TestCase):

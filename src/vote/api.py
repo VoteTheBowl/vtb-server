@@ -1,12 +1,11 @@
 import uuid
 from datetime import UTC, datetime
-from typing import Annotated, Any
 
 from django.db import IntegrityError
 from django.shortcuts import aget_object_or_404
 from ninja import Header, Router
 from ninja.errors import AuthorizationError, HttpError, ValidationError
-from pydantic import BeforeValidator, TypeAdapter
+from pydantic import TypeAdapter
 
 import voting_systems
 from vote.schemas import (
@@ -50,7 +49,7 @@ async def get_event(
     if token != event.share_token and token != event.host_token and not isVoter:
         raise AuthorizationError
 
-    if event.show_results == False and isVoter:
+    if event.show_results is False and isVoter:
         event.result = None
 
     return event
