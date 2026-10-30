@@ -17,7 +17,7 @@ from environs import env
 
 env.read_env()
 
-SENTRY_DSN = env.str("SENTRY_DSN")
+SENTRY_DSN = env.str("SENTRY_DSN", "")
 
 if SENTRY_DSN:
     sentry_sdk.init(
