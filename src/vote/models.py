@@ -8,7 +8,6 @@ class Event(models.Model):
     share_token = models.UUIDField(default=uuid.uuid4, editable=False)
     host_token = models.UUIDField(default=uuid.uuid4, editable=False)
     name = models.CharField()
-    choices = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
     show_results = models.BooleanField(default=False)
     closed = models.DateTimeField(null=True)
@@ -17,6 +16,10 @@ class Event(models.Model):
     allow_voting = models.BooleanField(default=False)
     result = models.JSONField(null=True, default=None)
 
+class Choice(models.Model):
+    label = models.CharField()
+    alias = models.CharField(null=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
 
 class Ballot(models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
