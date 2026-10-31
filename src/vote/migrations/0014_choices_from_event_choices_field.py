@@ -1,6 +1,5 @@
-import json
-
 from django.db import migrations
+
 
 def move_event_choices_to_choice_model(apps, schema_editor):
     Event = apps.get_model("vote", "Event")
@@ -10,8 +9,9 @@ def move_event_choices_to_choice_model(apps, schema_editor):
             new_choice = Choice(label=choice, alias=None, event=event)
             new_choice.save()
 
-            event.choices = ''
+            event.choices = ""
             event.save()
+
 
 def reverse_move_event_choices_to_choice_model(apps, schema_editor):
     Event = apps.get_model("vote", "Event")
@@ -26,11 +26,13 @@ def reverse_move_event_choices_to_choice_model(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
-    dependencies = [
-        ('vote', '0013_choice'),
+    dependencies = [  # noqa: RUF012
+        ("vote", "0013_choice"),
     ]
 
-    operations = [
-        migrations.RunPython(move_event_choices_to_choice_model, reverse_code=reverse_move_event_choices_to_choice_model)
+    operations = [  # noqa: RUF012
+        migrations.RunPython(
+            move_event_choices_to_choice_model,
+            reverse_code=reverse_move_event_choices_to_choice_model,
+        )
     ]
