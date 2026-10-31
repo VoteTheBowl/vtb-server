@@ -9,8 +9,8 @@ def move_event_choices_to_choice_model(apps, schema_editor):
             new_choice = Choice(label=choice, alias=None, event=event)
             new_choice.save()
 
-            event.choices = ""
-            event.save()
+        event.choices = ""
+        event.save()
 
 
 def reverse_move_event_choices_to_choice_model(apps, schema_editor):
