@@ -13,36 +13,52 @@ from vote.schemas import (
     BallotSubmission,
     CreateBallotSchema,
     EventCloseResponse,
-    EventCreation,
+    EventCreationBody,
     EventCreationResponse,
     EventDetails,
     EventStatusUpdateBody,
 )
 
-from .models import Ballot, Event
+from .models import Ballot, Choice, Event
 
 router = Router()
 
 
-@router.post("/event/create", response={201: EventCreationResponse}, tags=["event"])
-async def create_event(request, payload: EventCreation):
-    event = Event(
+@router.post(
+    "/event/create",
+    response={201: EventCreationResponse},
+    tags=["event"],
+)
+async def create_event(request, payload: EventCreationBody):
+    event = await Event.objects.acreate(
         name=payload.name,
-        choices=payload.choices,
         electoral_system=payload.electoral_system,
         allow_registration=payload.allow_registration,
         allow_voting=payload.allow_voting,
     )
+
+    choice_models: list[Choice] = []
+
+    for choice in payload.choices:
+        choice_models.append(
+            Choice(event=event, label=choice.label, alias=choice.alias)
+        )
+
+    await event.choices.aset(choice_models, bulk=False)
     await event.asave()
 
-    return 201, event
+    new_event = await Event.objects.prefetch_related("choices").aget(pk=event.id)
+
+    return 201, new_event
 
 
 @router.get("/event/{event_id}", response=EventDetails, tags=["event"])
 async def get_event(
     request, event_id: int, token: uuid.UUID = Header(alias="X-API-Key")
 ):
-    event = await aget_object_or_404(Event, pk=event_id)
+    event = await aget_object_or_404(
+        Event.objects.prefetch_related("choices"), pk=event_id
+    )
 
     isVoter = token in [x.token async for x in event.ballot_set.all()]
 
@@ -66,7 +82,9 @@ async def patch_event(
     body: EventStatusUpdateBody,
     token: uuid.UUID = Header(alias="X-API-Key"),
 ):
-    event = await aget_object_or_404(Event, pk=event_id)
+    event = await aget_object_or_404(
+        Event.objects.prefetch_related("choices"), pk=event_id
+    )
 
     if token != event.host_token:
         raise AuthorizationError
@@ -123,7 +141,8 @@ async def calculate_event_result(
         raise HttpError(409, "The result has already been calculated.")
 
     result = voting_systems.config[event.electoral_system]["result"](
-        event.choices, [x.vote async for x in event.ballot_set.all()]
+        [choice.id async for choice in event.choices.all()],
+        [x.vote async for x in event.ballot_set.all()],
     )
 
     event.result = result

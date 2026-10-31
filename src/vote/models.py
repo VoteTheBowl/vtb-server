@@ -19,7 +19,7 @@ class Event(models.Model):
 class Choice(models.Model):
     label = models.CharField()
     alias = models.CharField(null=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='choices')
 
 class Ballot(models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

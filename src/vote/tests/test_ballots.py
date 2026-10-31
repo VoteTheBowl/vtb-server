@@ -5,7 +5,7 @@ from django.test import TestCase
 from ninja.testing import TestAsyncClient
 
 from ..api import router
-from ..models import Ballot, Event
+from ..models import Ballot, Choice, Event
 
 
 class BallotTestCase(TestCase):
@@ -14,9 +14,14 @@ class BallotTestCase(TestCase):
         cls.aclient = TestAsyncClient(router)
         cls.event = Event.objects.create(
             name="Big Cookoff",
-            choices=["Tom's Texas Chili", "Jim's Vegan Chili", "Ed's Fusion Chili"],
             electoral_system="PL",
             allow_registration=True,
+        )
+        cls.event.choices.add(
+            Choice(label="Tom's Texas Chili"),
+            Choice(label="Jim's Vegan Chili"),
+            Choice(label="Ed's Fusion Chili"),
+            bulk=False,
         )
         cls.ballot = Ballot.objects.create(event=cls.event, voter_name="Becky")
 
@@ -152,7 +157,6 @@ class BallotTestCase(TestCase):
     async def test_ballot_list(self):
         event = Event(
             name="Small Cookoff",
-            choices=["Chilli 1", "Chilli 2", "Chilli 3"],
             electoral_system="PL",
             allow_registration=False,
             allow_voting=False,
@@ -160,6 +164,11 @@ class BallotTestCase(TestCase):
             show_results=True,
         )
         await event.asave()
+
+        await Choice(label="Chilli 1", event=event).asave()
+        await Choice(label="Chilli 2", event=event).asave()
+        await Choice(label="Chilli 3", event=event).asave()
+
         ballot1 = Ballot(event=event, voter_name="Bob")
         ballot2 = Ballot(event=event, voter_name="Jeff")
         ballot3 = Ballot(event=event, voter_name="Billy")
@@ -186,16 +195,23 @@ class BallotTestCase(TestCase):
     async def test_ballot_list_unauthorized(self):
         event = Event(
             name="Small Cookoff",
-            choices=["Chilli 1", "Chilli 2", "Chilli 3"],
             electoral_system="PL",
         )
         await event.asave()
+
+        await Choice(label="Chilli 1", event=event).asave()
+        await Choice(label="Chilli 2", event=event).asave()
+        await Choice(label="Chilli 3", event=event).asave()
+
         event1 = Event(
             name="Big Cooky",
-            choices=["Chilli 1", "Chilli 2", "Chilli 3"],
             electoral_system="PL",
         )
         await event1.asave()
+
+        await Choice(label="Chilli 1", event=event1).asave()
+        await Choice(label="Chilli 2", event=event1).asave()
+        await Choice(label="Chilli 3", event=event1).asave()
 
         ballot = Ballot(event=event, voter_name="Train")
 
@@ -224,13 +240,17 @@ class BallotTestCase(TestCase):
         # TODO: Seperate out into individual tests
         event = Event(
             name="Small Cookoff",
-            choices=["Chilli 1", "Chilli 2", "Chilli 3"],
             electoral_system="PL",
             show_results=True,
             allow_registration=True,
             allow_voting=False,
         )
         await event.asave()
+
+        await Choice(label="Chilli 1", event=event).asave()
+        await Choice(label="Chilli 2", event=event).asave()
+        await Choice(label="Chilli 3", event=event).asave()
+
         ballot1 = Ballot(event=event, voter_name="Bob")
         await ballot1.asave()
 

@@ -1,8 +1,10 @@
 import uuid
+
 from django.test import TestCase
 from ninja.testing import TestAsyncClient
-from ..models import Event, Ballot
+
 from ..api import router
+from ..models import Ballot, Choice, Event
 
 
 class EventTestCase(TestCase):
@@ -10,8 +12,13 @@ class EventTestCase(TestCase):
         self.aclient = TestAsyncClient(router)
         self.event = Event.objects.create(
             name="Big Cookoff",
-            choices=["Tom's Texas Chili", "Jim's Vegan Chili", "Ed's Fusion Chili"],
             electoral_system="PL",
+        )
+        self.event.choices.add(
+            Choice(label="Tom's Texas Chili"),
+            Choice(label="Jim's Vegan Chili"),
+            Choice(label="Ed's Fusion Chili"),
+            bulk=False,
         )
 
     async def test_create_event(self):
@@ -20,13 +27,14 @@ class EventTestCase(TestCase):
             json={
                 "name": "Big Cookoff",
                 "choices": [
-                    "Tom's Texas Chili",
-                    "Jim's Vegan Chili",
-                    "Ed's Fusion Chili",
+                    {"label": "Tom's Texas Chili"},
+                    {"label": "Jim's Vegan Chili"},
+                    {"label": "Ed's Fusion Chili"},
                 ],
                 "electoral_system": "RC",
             },
         )
+
         self.assertEqual(response.status_code, 201)
 
     async def test_get_event_with_host_token(self):
@@ -65,9 +73,13 @@ class EventTestCase(TestCase):
     async def test_get_event_with_ballot_token_from_different_event(self):
         another_event = await Event.objects.acreate(
             name="Small Cookoff",
-            choices=["Sally's Salsa", "Bob's Guacamole"],
             electoral_system="PL",
         )
+
+        await Choice(label="Tom's Texas Chili", event=another_event).asave()
+        await Choice(label="Tom's Texas ili", event=another_event).asave()
+        await Choice(label="Tom's Tex Chili", event=another_event).asave()
+
         ballot = await Ballot.objects.acreate(event=another_event, voter_name="Becky")
 
         response = await self.aclient.get(
