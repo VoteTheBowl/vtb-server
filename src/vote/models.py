@@ -1,7 +1,8 @@
 import uuid
 
 from django.db import models
-from django.db.models import UniqueConstraint
+from django.db.models import F, UniqueConstraint, Value
+from django.db.models.functions import Concat
 
 
 class Event(models.Model):
@@ -16,10 +17,18 @@ class Event(models.Model):
     allow_voting = models.BooleanField(default=False)
     result = models.JSONField(null=True, default=None)
 
+
 class Choice(models.Model):
     label = models.CharField()
     alias = models.CharField(null=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='choices')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="choices")
+
+    string_id = models.GeneratedField(
+        expression=Concat(Value("CH-"), F("id"), output_field=models.CharField()),
+        output_field=models.CharField(max_length=50, unique=True),
+        db_persist=True,
+    )
+
 
 class Ballot(models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -31,7 +40,7 @@ class Ballot(models.Model):
     submitted = models.DateTimeField(null=True)
 
     class Meta:
-        constraints = [
+        constraints = [  # noqa: RUF012
             UniqueConstraint(
                 fields=["voter_name", "event"], name="unique_voter_names_in_event"
             ),

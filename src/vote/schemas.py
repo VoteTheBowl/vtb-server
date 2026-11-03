@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import Any, Generic, Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
 from ninja import ModelSchema, Schema
 
 from vote.models import Ballot, Event
-from voting_systems.types import AllResultTypes
 
 T = TypeVar("T")
 
