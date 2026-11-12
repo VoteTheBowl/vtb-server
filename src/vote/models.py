@@ -10,6 +10,7 @@ class Event(models.Model):
     host_token = models.UUIDField(default=uuid.uuid4, editable=False)
     name = models.CharField()
     created = models.DateTimeField(auto_now_add=True)
+    hide_choice_labels = models.BooleanField(default=False)
     show_results = models.BooleanField(default=False)
     closed = models.DateTimeField(null=True)
     electoral_system = models.CharField(max_length=2)
@@ -20,7 +21,7 @@ class Event(models.Model):
 
 class Choice(models.Model):
     label = models.CharField()
-    alias = models.CharField(null=True)
+    alias = models.CharField(null=True, default=None)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="choices")
 
     string_id = models.GeneratedField(

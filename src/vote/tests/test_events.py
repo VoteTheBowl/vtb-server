@@ -15,9 +15,9 @@ class EventTestCase(TestCase):
             electoral_system="PL",
         )
         self.event.choices.add(
-            Choice(label="Tom's Texas Chili"),
-            Choice(label="Jim's Vegan Chili"),
-            Choice(label="Ed's Fusion Chili"),
+            Choice(label="Tom's Texas Chili", alias="Chilli 1"),
+            Choice(label="Jim's Vegan Chili", alias="Chilli 2"),
+            Choice(label="Ed's Fusion Chili", alias="Chilli 3"),
             bulk=False,
         )
 
@@ -42,14 +42,35 @@ class EventTestCase(TestCase):
             f"/event/{self.event.pk}",
             headers={"X-API-Key": self.event.host_token},
         )
+
         self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.json()["choices"][0]["label"],
+            "Tom's Texas Chili",
+        )
 
     async def test_get_event_with_share_token(self):
         response = await self.aclient.get(
             f"/event/{self.event.pk}",
             headers={"X-API-Key": self.event.share_token},
         )
+
         self.assertEqual(response.status_code, 200)
+
+    async def test_get_event_with_share_token_labels_hidden(self):
+        self.event.hide_choice_labels = True
+        await self.event.asave()
+
+        response = await self.aclient.get(
+            f"/event/{self.event.pk}",
+            headers={"X-API-Key": self.event.share_token},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        for choice in response.json()["choices"]:
+            self.assertEqual(choice["label"], "")
 
     async def test_get_event_with_ballot_token(self):
         ballot = await Ballot.objects.acreate(event=self.event, voter_name="Becky")
@@ -59,6 +80,21 @@ class EventTestCase(TestCase):
             headers={"X-API-Key": ballot.token},
         )
         self.assertEqual(response.status_code, 200)
+
+    async def test_get_event_with_ballot_token_labels_hidden(self):
+        ballot = await Ballot.objects.acreate(event=self.event, voter_name="Becky")
+
+        self.event.hide_choice_labels = True
+        await self.event.asave()
+
+        response = await self.aclient.get(
+            f"/event/{self.event.pk}",
+            headers={"X-API-Key": ballot.token},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        for choice in response.json()["choices"]:
+            self.assertEqual(choice["label"], "")
 
     async def test_get_event_with_random_token(self):
         response = await self.aclient.get(

@@ -27,5 +27,3 @@ config: dict[str, VotingSystemConfig] = {
         "submissionType": ranked_choice.RankedChoiceSubmission,
     },
 }
-
-__all__ = ["config"]

@@ -68,7 +68,13 @@ async def get_event(
     if event.show_results is False and isVoter:
         event.result = None
 
-    return event
+    return EventDetails.from_orm(
+        event,
+        context={
+            "hide_choice_labels": event.hide_choice_labels is True
+            and token != event.host_token
+        },
+    )
 
 
 @router.patch(

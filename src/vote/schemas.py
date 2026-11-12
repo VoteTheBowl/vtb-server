@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, Optional, TypeVar
 
 from ninja import ModelSchema, Schema
 
@@ -16,32 +16,23 @@ class EventStatusUpdateBody(Schema):
     show_results: bool | None = None
 
 
-class ChoiceID(Schema):
+class ChoiceSchema(Schema):
     id: int
-
-
-class ChoiceAlias(Schema):
-    alias: str | None = None
-
-
-class ChoiceLabel(Schema):
+    alias: str | None
     label: str
+    string_id: str
+
+    @staticmethod
+    def resolve_label(obj, context):
+        if "hide_choice_labels" in context and context["hide_choice_labels"] is True:
+            return ""
+        else:
+            return obj.label
 
 
-class ChoiceWithLabel(ChoiceID, ChoiceLabel):
-    pass
-
-
-class ChoiceWithAlias(ChoiceID, ChoiceAlias):
-    pass
-
-
-class ChoiceSchema(ChoiceID, ChoiceLabel, ChoiceAlias):
-    pass
-
-
-class ChoiceInput(ChoiceLabel, ChoiceAlias):
-    pass
+class ChoiceInput(Schema):
+    label: str
+    alias: str | None = None
 
 
 class EventCreationBody(Schema):
@@ -50,6 +41,7 @@ class EventCreationBody(Schema):
     electoral_system: str
     allow_registration: bool = False
     allow_voting: bool = False
+    hide_choice_labels: bool = False
 
 
 class EventDetails(ModelSchema):
@@ -66,6 +58,7 @@ class EventDetails(ModelSchema):
             "show_results",
             "result",
             "host_token",
+            "hide_choice_labels",
         ]
 
     choices: list[ChoiceSchema]
@@ -89,6 +82,7 @@ class EventCreationResponse(ModelSchema):
             "show_results",
             "result",
             "host_token",
+            "hide_choice_labels",
         ]
 
     choices: list[ChoiceSchema]

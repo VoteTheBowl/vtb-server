@@ -120,9 +120,12 @@ def migrate_choice_ids_in_results(apps, schema_editor):
                 old_result = event.result
                 new_result = {"rounds": []}
 
-                new_result["winner"] = event.choices.filter(label=old_result["winner"])[
-                    0
-                ].string_id
+                if old_result["winner"] == "__TIE_FLAG__":
+                    new_result["winner"] = "__TIE_FLAG__"
+                else:
+                    new_result["winner"] = event.choices.filter(
+                        label=old_result["winner"]
+                    )[0].string_id
 
                 for round in old_result["rounds"]:
                     new_round = {"tally": {}, "exhausted": round["exhausted"]}
@@ -182,9 +185,12 @@ def reverse_migrate_choice_ids_in_results(apps, schema_editor):
                 old_result = event.result
                 new_result = {"rounds": []}
 
-                new_result["winner"] = event.choices.filter(
-                    string_id=old_result["winner"]
-                )[0].label
+                if old_result["winner"] == "__TIE_FLAG__":
+                    new_result["winner"] = "__TIE_FLAG__"
+                else:
+                    new_result["winner"] = event.choices.filter(
+                        string_id=old_result["winner"]
+                    )[0].label
 
                 for round in old_result["rounds"]:
                     new_round = {"tally": {}, "exhausted": round["exhausted"]}

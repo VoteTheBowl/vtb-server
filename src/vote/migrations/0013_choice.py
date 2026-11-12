@@ -5,19 +5,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('vote', '0012_event_result'),
+        ("vote", "0012_event_result"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Choice',
+            name="Choice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField()),
-                ('alias', models.CharField(null=True)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='vote.event')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField()),
+                ("alias", models.CharField(null=True, default=None)),
+                (
+                    "event",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="vote.event"
+                    ),
+                ),
             ],
         ),
     ]
