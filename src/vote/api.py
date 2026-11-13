@@ -104,6 +104,9 @@ async def patch_event(
     if body.show_results is not None:
         event.show_results = body.show_results
 
+    if body.hide_choice_labels is not None:
+        event.hide_choice_labels = body.hide_choice_labels
+
     await event.asave()
     return event
 

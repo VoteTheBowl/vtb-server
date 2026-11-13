@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Literal, Optional, TypeVar
+from typing import Any, Literal, TypeVar
 
 from ninja import ModelSchema, Schema
 
@@ -14,6 +14,7 @@ class EventStatusUpdateBody(Schema):
     allow_registration: bool | None = None
     allow_voting: bool | None = None
     show_results: bool | None = None
+    hide_choice_labels: bool | None = None
 
 
 class ChoiceSchema(Schema):
