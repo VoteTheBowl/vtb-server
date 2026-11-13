@@ -147,7 +147,7 @@ async def calculate_event_result(
         raise HttpError(409, "The result has already been calculated.")
 
     result = voting_systems.config[event.electoral_system]["result"](
-        [choice.id async for choice in event.choices.all()],
+        [choice.string_id async for choice in event.choices.all()],
         [x.vote async for x in event.ballot_set.all()],
     )
 
