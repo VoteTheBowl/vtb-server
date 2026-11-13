@@ -35,6 +35,7 @@ async def create_event(request, payload: EventCreationBody):
         electoral_system=payload.electoral_system,
         allow_registration=payload.allow_registration,
         allow_voting=payload.allow_voting,
+        hide_choice_labels=payload.hide_choice_labels,
     )
 
     choice_models: list[Choice] = []
