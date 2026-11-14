@@ -1,21 +1,34 @@
 import uuid
 
 from django.db import models
-from django.db.models import UniqueConstraint
+from django.db.models import F, UniqueConstraint, Value
+from django.db.models.functions import Concat
 
 
 class Event(models.Model):
     share_token = models.UUIDField(default=uuid.uuid4, editable=False)
     host_token = models.UUIDField(default=uuid.uuid4, editable=False)
     name = models.CharField()
-    choices = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
+    hide_choice_labels = models.BooleanField(default=False)
     show_results = models.BooleanField(default=False)
     closed = models.DateTimeField(null=True)
     electoral_system = models.CharField(max_length=2)
     allow_registration = models.BooleanField(default=False)
     allow_voting = models.BooleanField(default=False)
     result = models.JSONField(null=True, default=None)
+
+
+class Choice(models.Model):
+    label = models.CharField()
+    alias = models.CharField(null=True, default=None)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="choices")
+
+    string_id = models.GeneratedField(
+        expression=Concat(Value("CH-"), F("id"), output_field=models.CharField()),
+        output_field=models.CharField(max_length=50, unique=True),
+        db_persist=True,
+    )
 
 
 class Ballot(models.Model):
@@ -28,7 +41,7 @@ class Ballot(models.Model):
     submitted = models.DateTimeField(null=True)
 
     class Meta:
-        constraints = [
+        constraints = [  # noqa: RUF012
             UniqueConstraint(
                 fields=["voter_name", "event"], name="unique_voter_names_in_event"
             ),

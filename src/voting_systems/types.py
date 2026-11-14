@@ -1,4 +1,4 @@
-from voting_systems import plurality, ranked_choice, star
+from . import plurality, ranked_choice, star
 
 type AllResultTypes = (
     plurality.PluralityResult

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TypedDict
 
-from voting_systems import plurality, ranked_choice, star
+from . import plurality, ranked_choice, star
 
 
 class VotingSystemConfig(TypedDict):

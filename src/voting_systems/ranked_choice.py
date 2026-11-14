@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from voting_systems.base import VotingResultException
+from .base import VotingResultException
 
 
 class Round(TypedDict):
