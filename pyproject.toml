@@ -1,6 +1,6 @@
 [project]
 name = "server"
-version = "0.8.1"
+version = "0.9.0"
 description = ""
 authors = [
     {name = "Jesudas Joseph",email = "jesudasmjoseph@gmail.com"}
@@ -14,6 +14,7 @@ dependencies = [
     "psycopg (>=3.2.10,<4.0.0)",
     "pydantic (==2.11)",
     "sentry-sdk (>=2.73.0,<3.0.0)",
+    "django-cors-headers (>=4.9.0,<5.0.0)",
 ]
 
 [tool.poetry]

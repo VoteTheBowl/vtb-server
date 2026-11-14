@@ -8,7 +8,7 @@ from .schema import VersionResponse
 
 api = NinjaAPI(
     title="Vote The Bowl API",
-    version="0.8.1",
+    version="0.9.0",
     docs_url=("/docs/" if settings.DEBUG else None),
 )
 
