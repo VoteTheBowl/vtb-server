@@ -62,7 +62,6 @@ CORS_ALLOW_HEADERS = (
     *default_headers,
     "x-api-key",
 )
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.auth",
