@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 import sentry_sdk
+from corsheaders.defaults import default_headers
 from environs import env
 
 env.read_env()
@@ -57,15 +58,19 @@ DEBUG = env.bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOST", "localhost")]
 CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS", [])
 
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-api-key",
+)
 # Application definition
 
 INSTALLED_APPS = [
-    "corsheaders",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "user",
     "vote",
 ]
