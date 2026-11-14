@@ -115,7 +115,7 @@ def get_result(choices: list[str], submissions: list[StarSubmission]) -> StarRes
 
     for sub in submissions:
         if sub is None:
-            break
+            continue
 
         sanitizedSubmissions.append(sub)
 
